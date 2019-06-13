@@ -4,8 +4,10 @@
 import org.yaml.snakeyaml.Yaml
 
 def repos = [
-  [ name: 'hello', url: 'https://github.com/getcloudnativelabs/hello.git', branch: 'refs/heads/master' ],
-  [ name: 'bonjour', url: 'https://github.com/getcloudnativelabs/bonjour.git', branch: 'refs/heads/master' ]
+  [ name: 'hello', url: 'https://bitbucket.biscrum.com/scm/odlop/pltf-hello.git', branch: 'refs/heads/master' ],
+  [ name: 'bonjour', url: 'https://bitbucket.biscrum.com/scm/odlop/pltf-bonjour.git', branch: 'refs/heads/master' ],
+  [ name: 'ciao', url: 'https://bitbucket.biscrum.com/scm/odlop/pltf-ciao.git', branch: 'refs/heads/master' ],
+  [ name: 'hola', url: 'https://bitbucket.biscrum.com/scm/odlop/pltf-hola.git', branch: 'refs/heads/master' ]
 ]
 
 // Checkout repositories into the current workspace
@@ -22,7 +24,7 @@ def checkoutRepos(repos) {
       ],
       submoduleCfg: [],
       userRemoteConfigs: [
-        [ url: repo.url ]
+        [ credentialsId: 'cd-user-with-password',  url: repo.url ]
       ]
     ])
   }
@@ -75,33 +77,56 @@ def runPipelinePhase(name, repos) {
 }
 
 // Returns a dependency ordered representation of repositories
+// def sortReposInDependencyOrder(repos) {
+//   def results = []
+
+//   def bonjour = repos.find { it.name == 'bonjour' }
+//   def hello = repos.find { it.name == 'hello' }
+
+//   // The first (and in this demo scenario only) dependency bonjour and hello point to
+//   def bonjourDep = !bonjour.pipelineConfig.dependencies.isEmpty() ? bonjour.pipelineConfig.dependencies.first() : ""
+//   def helloDep = !hello.pipelineConfig.dependencies.isEmpty() ? hello.pipelineConfig.dependencies.first() : ""
+
+//   // Test if bonjour and hello depend on eachother
+//   if (bonjourDep == hello.url && helloDep == bonjour.url) {
+//     throw new RuntimeException('Error: detected a dependency cycle')
+//   }
+  
+//   // Test if bonjour depends on hello
+//   if (bonjourDep == hello.url) {
+//     results << hello
+//     results << bonjour
+//   // Test if hello depends on bonjour
+//   } else if (helloDep == bonjour.url) {
+//     results << bonjour
+//     results << hello
+//   }
+
+//   results
+// }
+
 def sortReposInDependencyOrder(repos) {
   def results = []
+  import hudson.model.*
+  import java.io.File;
+  import jenkins.model.Jenkins;
 
-  def bonjour = repos.find { it.name == 'bonjour' }
-  def hello = repos.find { it.name == 'hello' }
-
-  // The first (and in this demo scenario only) dependency bonjour and hello point to
-  def bonjourDep = !bonjour.pipelineConfig.dependencies.isEmpty() ? bonjour.pipelineConfig.dependencies.first() : ""
-  def helloDep = !hello.pipelineConfig.dependencies.isEmpty() ? hello.pipelineConfig.dependencies.first() : ""
-
-  // Test if bonjour and hello depend on eachother
-  if (bonjourDep == hello.url && helloDep == bonjour.url) {
-    throw new RuntimeException('Error: detected a dependency cycle')
-  }
+  def jenkinsRootDir = build.getEnvVars()["JENKINS_HOME"];
+  def parent = getClass().getClassLoader()
+  def loader = new GroovyClassLoader(parent)
   
-  // Test if bonjour depends on hello
-  if (bonjourDep == hello.url) {
-    results << hello
-    results << bonjour
-  // Test if hello depends on bonjour
-  } else if (helloDep == bonjour.url) {
-    results << bonjour
-    results << hello
+  def dep_graph = loader.parseClass(readFile "/src/dependency-graph/dependencyGraph.groovy")
+  
+  repos.each { repo ->
+    if (!repo.pipelineConfig.dependencies.isEmpty())
+      repo.pipelineConfig.dependencies.each { dep_url -> 
+        dep_repo = repos.find { it.url == dep_url }
+        dep_graph.addDependency (repo.name , dep_repo.name)
+      }
   }
-
-  results
+  println(dep_graph.toString())
 }
+
 
 def dependencyOrderedRepos = []
 
@@ -112,43 +137,48 @@ pipeline {
     stage('Init') {
       steps {
         script {
+          // echo "Checking out repositories"
           checkoutRepos(repos)
+          // echo "Loading pipeline configuration"
           loadPipelineConfigs(repos)
+          // echo "Ordering dependencies"
           dependencyOrderedRepos = sortReposInDependencyOrder(repos)
+          // echo dependencyOrderedRepos[0].name
+          // echo dependencyOrderedRepos[1].name
         }
       }
     }
 
-    stage('Build') {
-      steps {
-        script {
-          runPipelinePhase('build', dependencyOrderedRepos)
-        }
-      }
-    }
+    // stage('Build') {
+    //   steps {
+    //     script {
+    //       runPipelinePhase('build', dependencyOrderedRepos)
+    //     }
+    //   }
+    // }
 
-    stage('Deploy') {
-      steps {
-        script {
-          runPipelinePhase('deploy', dependencyOrderedRepos)
-        }
-      }
-    }
+    // stage('Deploy') {
+    //   steps {
+    //     script {
+    //       runPipelinePhase('deploy', dependencyOrderedRepos)
+    //     }
+    //   }
+    // }
 
-    stage('Test') {
-      steps {
-        script {
-          runPipelinePhase('test', dependencyOrderedRepos)
-        }
-      }
-    }
+    // stage('Test') {
+    //   steps {
+    //     script {
+    //       runPipelinePhase('test', dependencyOrderedRepos)
+    //     }
+    //   }
+    // }
 
-    stage('Release') {
-      steps {
-        script {
-          runPipelinePhase('release', dependencyOrderedRepos)
-        }
-      }
-    }
+    // stage('Release') {
+    //   steps {
+    //     script {
+    //       runPipelinePhase('release', dependencyOrderedRepos)
+    //     }
+    //   }
+    // }
   }
 }
