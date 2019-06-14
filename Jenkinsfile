@@ -44,6 +44,12 @@ def loadPipelineConfigs(repos) {
   walkRepoDirectories(repos, visitor) 
 }
 
+// Load project metadata
+def loadProjectMetadata() {
+  def file = new File("${WORKSPACE}/metadata.yml")
+  return file.exists() ? new Yaml().load(file.text) : [:]
+}
+
 // Walk each repository directory and apply a visitor clojure
 def walkRepoDirectories(repos, visitor) {
   repos.each { repo ->
@@ -114,16 +120,16 @@ def sortReposInDependencyOrder(repos) {
 // TODO:
 // - retrieve Jira credentials and host name in the Jenkins credentials store
 // - document creation is in the scope of each repository, not the orchestration pipeline
-def demoNotifyJiraAboutDocumentCreationEvent() {
+def demoNotifyJiraAboutDocumentCreationEvent(projectMetadata) {
   def credentials = "admin:admin".bytes.encodeBase64().toString()
 
-  // Request the Jira issue with the label VP in project PP
+  // Request the Jira issue with the label VP in the current project
   def jiraSearchURI = new URIBuilder()
       .setScheme("http")
       .setHost("jira.pltf-demo")
       .setPort(8080)
       .setPath("/rest/api/2/search")
-      .addParameter("jql", "project = PP and labels = VP")
+      .addParameter("jql", "project = ${projectMetadata.services.jira.project.key} and labels = VP")
       .build()
 
   def response = httpRequest url: jiraSearchURI.toString(),
@@ -133,7 +139,7 @@ def demoNotifyJiraAboutDocumentCreationEvent() {
 
   def responseContent = new groovy.json.JsonSlurperClassic().parseText(response.content)
   if (responseContent.total > 1) {
-    error "Error: Jira reports there is > 1 issues with label 'VP' in project 'PP'"
+    error "Error: Jira reports there is > 1 issues with label 'VP' in project '${projectMetadata.services.jira.project.key}'"
   }
 
   // Add a comment to the previously queried Jira issue
@@ -153,7 +159,9 @@ def demoNotifyJiraAboutDocumentCreationEvent() {
     requestBody: groovy.json.JsonOutput.toJson([ body: "A new document has been generated and is available at: http://." ])
 }
 
+
 def dependencyOrderedRepos = []
+def projectMetadata = [:]
 
 pipeline {
   agent any
@@ -162,6 +170,8 @@ pipeline {
     stage('Init') {
       steps {
         script {
+          projectMetadata = loadProjectMetadata()
+
           checkoutRepos(repos)
           loadPipelineConfigs(repos)
           dependencyOrderedRepos = sortReposInDependencyOrder(repos)
@@ -181,7 +191,7 @@ pipeline {
       steps {
         script {
           runPipelinePhase('deploy', dependencyOrderedRepos)
-          demoNotifyJiraAboutDocumentCreationEvent()
+          demoNotifyJiraAboutDocumentCreationEvent(projectMetadata)
         }
       }
     }
