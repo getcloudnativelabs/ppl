@@ -126,7 +126,7 @@ def demoNotifyJiraAboutDocumentCreationEvent(projectMetadata) {
   // Request the Jira issue with the label VP in the current project
   def jiraSearchURI = new URIBuilder()
       .setScheme("http")
-      .setHost("jira.pltf-demo")
+      .setHost("jira.pltf")
       .setPort(8080)
       .setPath("/rest/api/2/search")
       .addParameter("jql", "project = ${projectMetadata.services.jira.project.key} and labels = VP")
@@ -145,7 +145,7 @@ def demoNotifyJiraAboutDocumentCreationEvent(projectMetadata) {
   // Add a comment to the previously queried Jira issue
   def jiraIssueURI = new URIBuilder()
       .setScheme("http")
-      .setHost("jira.pltf-demo")
+      .setHost("jira.pltf")
       .setPort(8080)
       .setPath("/rest/api/2/issue/${responseContent.issues[0].id}/comment")
       .build()
