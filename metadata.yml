@@ -3,4 +3,4 @@ name: Project Phoenix
 services:
   jira:
     project:
-      key: PP
+      key: ODLID

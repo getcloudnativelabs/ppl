@@ -1,6 +1,5 @@
 #!/usr/bin/env/groovy
 
-
 // TODO: retrieve repo list automatically from BitBucket
 def repos = [
   [ name: 'hello', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-hello.git', branch: 'refs/heads/master' ],
@@ -21,13 +20,9 @@ pipeline {
       steps {
         script {
           projectMetadata = loadProjectMetadata()
-
           checkoutRepos(repos)
-          // echo "Loading pipeline configuration"
           loadPipelineConfigs(repos)
-          // echo "Ordering dependencies"
           dependencyOrderedRepos = sortReposInDependencyOrder(repos)
-          // println dependencyOrderedRepos.toString()
         }
       }
     }
