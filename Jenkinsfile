@@ -47,7 +47,10 @@ pipeline {
 	stage('Documentation') {
       steps {
         script {
-		  echo 'Hallo'
+		  def docData = createDocument('data')
+          def docUrl = uploadDocumentToNexus(docData)
+		  def task = queryJiraTask(projectMetadata, 'project = "key = "PLTF-10"')
+          addCommentToJira(task.key, docUrl)
         }
       }
     }
