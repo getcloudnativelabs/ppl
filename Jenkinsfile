@@ -39,7 +39,6 @@ pipeline {
       steps {
         script {
           runPipelinePhase('deploy', dependencyOrderedRepos)
-          demoNotifyJiraAboutDocumentCreationEvent(projectMetadata)
         }
       }
     }
