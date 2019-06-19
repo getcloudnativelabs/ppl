@@ -47,7 +47,7 @@ pipeline {
 	stage('Documentation') {
       steps {
         script {
-		  
+		  echo 'Hallo'
         }
       }
     }
