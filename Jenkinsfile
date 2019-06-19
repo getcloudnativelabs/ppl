@@ -54,7 +54,7 @@ pipeline {
 	stage('Documentation') {
       steps {
         script {
-		  createDocumentation("${STAGE}", dependencyOrderedRepos, projectMetadata)
+		  createDocumentation('documentation', dependencyOrderedRepos, projectMetadata)
         }
       }
     }
