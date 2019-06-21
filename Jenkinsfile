@@ -39,7 +39,6 @@ pipeline {
       steps {
         script {
           runPipelinePhase('deploy', dependencyOrderedRepos)
-          demoNotifyJiraAboutDocumentCreationEvent(projectMetadata)
         }
       }
     }
@@ -48,6 +47,13 @@ pipeline {
       steps {
         script {
           runPipelinePhase('test', dependencyOrderedRepos)
+        }
+      }
+    }
+	stage('Documentation') {
+      steps {
+        script {
+		  createDocumentation('documentation', dependencyOrderedRepos, projectMetadata)
         }
       }
     }
