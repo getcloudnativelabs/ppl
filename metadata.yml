@@ -1,6 +1,12 @@
 name: Project Phoenix
+description: A very ambitious project.
 
 services:
   jira:
     project:
       key: ODLID
+  nexus:
+    repository:
+      name: project-phoenix
+      directories:
+        reports: reports
