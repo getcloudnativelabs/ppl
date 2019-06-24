@@ -67,7 +67,7 @@ pipeline {
                                     date_created: java.time.LocalDateTime.now().toString()
                                 ]
                             ],
-                            jiraIssueJQL: "project = ${projectMetadata.services.jira.project.key} AND labels = VP"
+                            jiraIssueJQL: "project = ${projectMetadata.services.jira.project.key} AND labels = IR"
                         ]
                     ]
 
