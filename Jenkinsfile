@@ -1,17 +1,7 @@
 #!/usr/bin/env/groovy
 
-// TODO: retrieve repo list automatically from BitBucket
-def repos = [
-    [ name: 'adeu', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-adeu.git', branch: 'refs/heads/master' ],
-    [ name: 'bonjour', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-bonjour.git', branch: 'refs/heads/master' ],
-    [ name: 'ciao', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-ciao.git', branch: 'refs/heads/master' ],
-    [ name: 'hello', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-hello.git', branch: 'refs/heads/master' ],
-    [ name: 'hola', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-hola.git', branch: 'refs/heads/master' ],
-    [ name: 'tschuss', url: 'https://bitbucket.biscrum.com/scm/pltf/pltf-tschuss.git', branch: 'refs/heads/master' ]
-]
-
-def dependencyOrderedRepos = []
-def projectMetadata = [:]
+def metadata = [:]
+def repoSets = []
 
 pipeline {
     agent any
@@ -19,10 +9,14 @@ pipeline {
         stage('Init') {
             steps {
                 script {
-                    projectMetadata = loadProjectMetadata()
+                    metadata = loadProjectMetadata()
+
+                    def repos = metadata.repositories
                     checkoutReposIntoWorkspace(repos)
                     loadPipelineConfigs(repos)
-                    dependencyOrderedRepos = sortReposInDependencyOrder(repos)
+
+                    // Compute a list of grouped repository configs in dependency order
+                    repoSets = getDependencySortedRepoSets(repos)
                 }
             }
         }
@@ -30,7 +24,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    runPipelinePhase('build', dependencyOrderedRepos)
+                    runPipelinePhase('build', repoSets)
                 }
             }
         }
@@ -38,7 +32,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    runPipelinePhase('deploy', dependencyOrderedRepos)
+                    runPipelinePhase('deploy', repoSets)
                 }
             }
         }
@@ -46,7 +40,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    runPipelinePhase('test', dependencyOrderedRepos)
+                    runPipelinePhase('test', repoSets)
                 }
             }
         }
@@ -61,17 +55,17 @@ pipeline {
                             id: "InstallationReport",
                             data: [
                                 metadata: [
-                                    name: projectMetadata.name,
-                                    description: projectMetadata.description,
+                                    name: metadata.name,
+                                    description: metadata.description,
                                     version: version,
                                     date_created: java.time.LocalDateTime.now().toString()
                                 ]
                             ],
-                            jiraIssueJQL: "project = ${projectMetadata.services.jira.project.key} AND labels = IR"
+                            jiraIssueJQL: "project = ${metadata.services.jira.project.key} AND labels = IR"
                         ]
                     ]
 
-		            demoCreateReports(reports, version, projectMetadata)
+		            demoCreateReports(reports, version, metadata)
                 }
             }
         }
@@ -79,7 +73,7 @@ pipeline {
         stage('Release') {
             steps {
                 script {
-                    runPipelinePhase('release', dependencyOrderedRepos)
+                    runPipelinePhase('release', repoSets)
                 }
             }
         }

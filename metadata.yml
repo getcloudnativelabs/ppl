@@ -10,3 +10,23 @@ services:
       name: project-phoenix
       directories:
         reports: reports
+
+repositories:
+  - name: adeu
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-adeu.git
+    branch: refs/heads/master
+  - name: bonjour
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-bonjour.git
+    branch: refs/heads/master
+  - name: ciao
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-ciao.git
+    branch: refs/heads/master
+  - name: hello
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-hello.git
+    branch: refs/heads/master
+  - name: hola
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-hola.git
+    branch: refs/heads/master
+  - name: tschuss
+    url: https://bitbucket.biscrum.com/scm/pltf/pltf-tschuss.git
+    branch: refs/heads/master
