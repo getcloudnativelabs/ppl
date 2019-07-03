@@ -24,7 +24,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    runPipelinePhase('build', repoSets)
+                    runPipelinePhase('Build', repoSets)
                 }
             }
         }
@@ -32,7 +32,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    runPipelinePhase('deploy', repoSets)
+                    runPipelinePhase('Deploy', repoSets)
                 }
             }
         }
@@ -40,7 +40,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    runPipelinePhase('test', repoSets)
+                    runPipelinePhase('Test', repoSets)
                 }
             }
         }
@@ -73,7 +73,7 @@ pipeline {
         stage('Release') {
             steps {
                 script {
-                    runPipelinePhase('release', repoSets)
+                    runPipelinePhase('Release', repoSets)
                 }
             }
         }
