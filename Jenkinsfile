@@ -1,5 +1,6 @@
 #!/usr/bin/env/groovy
 
+// FIXME: pin to specific version once stabilized
 @Library('mro-pipeline-jenkins-library') _
 
 def metadata = [:]
