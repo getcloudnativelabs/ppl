@@ -19,7 +19,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    executePhaseForRepos('Build', repos)
+                    phaseBuild(metadata, repos)
                 }
             }
         }
@@ -27,7 +27,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    executePhaseForRepos('Deploy', repos)
+                    phaseDeploy(metadata, repos)
                 }
             }
         }
@@ -35,32 +35,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    executePhaseForRepos('Test', repos)
-                }
-            }
-        }
-
-        stage('Reports') {
-            steps {
-                script {
-                    // Demo only (each repository is responsible for report creation)
-                    def version = "0.1"
-                    def reports = [
-                        [
-                            id: "InstallationReport",
-                            data: [
-                                metadata: [
-                                    name: metadata.name,
-                                    description: metadata.description,
-                                    version: version,
-                                    date_created: java.time.LocalDateTime.now().toString()
-                                ]
-                            ],
-                            jiraIssueJQL: "project = ${metadata.services.jira.project.key} AND labels = IR"
-                        ]
-                    ]
-
-		            demoCreateReports(reports, version, metadata)
+                    phaseTest(metadata, repos)
                 }
             }
         }
@@ -68,7 +43,7 @@ pipeline {
         stage('Release') {
             steps {
                 script {
-                    executePhaseForRepos('Release', repos)
+                    phaseRelease(metadata, repos)
                 }
             }
         }
