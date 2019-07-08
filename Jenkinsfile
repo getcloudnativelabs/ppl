@@ -1,7 +1,7 @@
 #!/usr/bin/env/groovy
 
 def metadata = [:]
-def repoSets = []
+def repos = []
 
 pipeline {
     agent any
@@ -9,14 +9,9 @@ pipeline {
         stage('Init') {
             steps {
                 script {
-                    metadata = loadProjectMetadata()
-
-                    def repos = metadata.repositories
-                    checkoutReposIntoWorkspace(repos)
-                    loadPipelineConfigs(repos)
-
-                    // Compute a list of grouped repository configs in dependency order
-                    repoSets = getDependencySortedRepoSets(repos)
+                    def result = phaseInit()
+                    metadata = result.metadata
+                    repos = result.repos
                 }
             }
         }
@@ -24,7 +19,7 @@ pipeline {
         stage('Build') {
             steps {
                 script {
-                    runPipelinePhase('Build', repoSets)
+                    executePhaseForRepos('Build', repos)
                 }
             }
         }
@@ -32,7 +27,7 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    runPipelinePhase('Deploy', repoSets)
+                    executePhaseForRepos('Deploy', repos)
                 }
             }
         }
@@ -40,7 +35,7 @@ pipeline {
         stage('Test') {
             steps {
                 script {
-                    runPipelinePhase('Test', repoSets)
+                    executePhaseForRepos('Test', repos)
                 }
             }
         }
@@ -73,7 +68,7 @@ pipeline {
         stage('Release') {
             steps {
                 script {
-                    runPipelinePhase('Release', repoSets)
+                    executePhaseForRepos('Release', repos)
                 }
             }
         }
