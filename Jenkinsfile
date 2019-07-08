@@ -1,5 +1,7 @@
 #!/usr/bin/env/groovy
 
+@Library('mro-pipeline-jenkins-library') _
+
 def metadata = [:]
 def repos = []
 
