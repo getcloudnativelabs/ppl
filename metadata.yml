@@ -1,0 +1,15 @@
+name: 
+description: 
+
+services:
+  jira:
+    project:
+      key: 
+  nexus:
+    repository:
+      name: 
+      directories:
+        reports: 
+
+repositories: []
+
