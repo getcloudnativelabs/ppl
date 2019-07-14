@@ -1,16 +1,31 @@
-# Plain Dockerfile-based quickstarter
+# Multi-Repo Orchestration (MRO) Jenkins Pipeline
 
-## Overview
-This quickstarter provides the most simple way to plug into OpenDevStack CI/CD. It only contains a `Dockerfile` that one should adapt to ones needs.
+A Jenkins pipeline to orchestrate multiple repositories into a live application.
 
-## Customization
+## Features
 
-* For unit testing, add your tests to the repository and amend `stageUnitTest`
-* For code analysis, add the stage `stageScanForSonarqube` and amend `sonar-project.properties`
+### Automated Resolution of Dependencies
 
-## Image build process
+The pipeline automatically resolves dependencies between repositories to be orchestrated so that they can be delivered in the correct order. Currently, repositories that want to be orchestrated need to be added to the `repositories` list inside the `metadata.yml`. Example:
 
-The most important stage is `stageBuild`. Here you can copy any artifacts into the `docker` directory - which is the context passed into the image build process. Whatever is in this context you can use from within the `Dockerfile` via `COPY` instructions.
+```
+repositories:
+  - name: my-repo-A
+    url: https://github.com/my-org/my-repo-A.git
+    branch: refs/heads/master
+  - name: my-repo-B
+    url: https://github.com/my-org/my-repo-B.git
+    branch: refs/heads/master
+```
 
-In case your `Dockerfile`'s `FROM` refers to an imagestream in your OpenShift registry, you need to alter the `BuildConfig` and provide the imagestream/name to build from.
+If a named repository wants to announce a dependency on another project to the pipeline, the dependency needs to be listed in that repository's `.pipeline-config.yml`. Example:
+
+```
+dependencies:
+  - https://github.com/my-org/my-repo-A.git
+```
+
+### Automated Parallelization of Repositories
+
+Instead of merely resolving repositories into a strictly sequential execution model, our algorithm automatically understands which repositories are independent and can run in parallel for best time-to-feedback and time-to-delivery.
 
