@@ -1,5 +1,5 @@
 // FIXME: pin to specific version once stabilized
-@Library('ods-mro-jenkins-shared-library') _
+@Library('ods-mro-jenkins-shared-library@master') _
 
 def metadata = [:]
 def repos = []
