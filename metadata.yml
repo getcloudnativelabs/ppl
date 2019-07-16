@@ -1,10 +1,14 @@
+id: 
 name: 
 description: 
 
 services:
+  bitbucket:
+    credentials:
+      id: 
   jira:
-    project:
-      key: 
+    credentials:
+      id: 
   nexus:
     repository:
       name: 
@@ -12,4 +16,3 @@ services:
         reports: 
 
 repositories: []
-

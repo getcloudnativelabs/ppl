@@ -2,7 +2,7 @@
 @Library('ods-mro-jenkins-shared-library@master') _
 
 def metadata = [:]
-def repos = []
+def repos    = []
 
 pipeline {
     agent any
