@@ -12,7 +12,5 @@ services:
   nexus:
     repository:
       name: 
-      directories:
-        reports: 
 
 repositories: []
