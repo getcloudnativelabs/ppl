@@ -1,5 +1,5 @@
 // FIXME: pin to specific version once stabilized
-@Library('ods-mro-jenkins-shared-library@master') _
+@Library('ods-mro-jenkins-shared-library@Feature/NexusStoresZipFile') _
 
 def metadata = [:]
 def repos    = []
